@@ -1,0 +1,1650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Smart Irrigation - System Configuration</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(145deg, #0b2e1f 0%, #1a4f2e 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* Glass Header */
+        .glass-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 16px 24px;
+            border-radius: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 15px 35px rgba(0, 40, 20, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            box-shadow: 0 8px 16px rgba(46, 204, 113, 0.3);
+        }
+
+        .logo-text h1 {
+            color: #1a3b2e;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .logo-text span {
+            color: #4a6f5e;
+            font-size: 0.9rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.04);
+            padding: 6px;
+            border-radius: 40px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #1a3b2e;
+            padding: 10px 20px;
+            border-radius: 30px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            background: white;
+            color: #27ae60;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        /* Main Container */
+        .settings-wrapper {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 32px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 20, 10, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Alert Banner */
+        .alert-banner {
+            padding: 16px 24px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideInDown 0.3s ease;
+            display: none;
+        }
+
+        .alert-success {
+            background: #e3f7e8;
+            border-left: 4px solid #27ae60;
+            color: #1e7e34;
+        }
+
+        .alert-error {
+            background: #fee9e7;
+            border-left: 4px solid #e74c3c;
+            color: #c23b2b;
+        }
+
+        .alert-info {
+            background: #e1f0fa;
+            border-left: 4px solid #3498db;
+            color: #1a6ea8;
+        }
+
+        .alert-warning {
+            background: #fff4e0;
+            border-left: 4px solid #f39c12;
+            color: #b45f1b;
+        }
+
+        /* Settings Grid */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        /* Settings Cards */
+        .settings-card {
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.02);
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: all 0.2s;
+        }
+
+        .settings-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #eef2f6;
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            background: #e3f7e8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #27ae60;
+            font-size: 1.5rem;
+        }
+
+        .card-header h3 {
+            color: #1a3b2e;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .card-header p {
+            color: #5a7b6b;
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #1a3b2e;
+            font-size: 0.95rem;
+        }
+
+        .form-group label i {
+            color: #27ae60;
+            margin-right: 8px;
+            width: 20px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e8e4;
+            border-radius: 16px;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #27ae60;
+            box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1);
+        }
+
+        .form-control:hover {
+            border-color: #27ae60;
+        }
+
+        .form-help {
+            font-size: 0.85rem;
+            color: #5a7b6b;
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .form-help i {
+            color: #27ae60;
+            font-size: 0.8rem;
+        }
+
+        .form-help.warning {
+            color: #e74c3c;
+        }
+
+        .form-help.warning i {
+            color: #e74c3c;
+        }
+
+        /* Toggle Switch */
+        .toggle-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid #eef2f6;
+        }
+
+        .toggle-label {
+            flex: 1;
+        }
+
+        .toggle-label strong {
+            display: block;
+            color: #1a3b2e;
+            margin-bottom: 4px;
+        }
+
+        .toggle-label .form-help {
+            margin-top: 0;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 56px;
+            height: 30px;
+            margin-left: 16px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #cbd5e0;
+            transition: .3s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        input:checked + .slider {
+            background-color: #27ae60;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        /* Plant-specific styles */
+        .plant1-badge {
+            background: #e3f7e8;
+            color: #27ae60;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .plant2-badge {
+            background: #fff4e0;
+            color: #f39c12;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .dual-input {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        /* Schedule Items */
+        .schedule-list {
+            margin: 16px 0;
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        .schedule-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: #f8faf9;
+            border-radius: 16px;
+            margin-bottom: 8px;
+            border: 1px solid #e0e8e4;
+            transition: all 0.2s;
+        }
+
+        .schedule-item:hover {
+            background: #edf2f0;
+            transform: translateX(4px);
+        }
+
+        .schedule-time {
+            width: 100px;
+            font-weight: 600;
+            color: #27ae60;
+        }
+
+        .schedule-duration {
+            flex: 1;
+        }
+
+        .schedule-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .schedule-badge {
+            padding: 4px 10px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-enabled {
+            background: #e3f7e8;
+            color: #27ae60;
+        }
+
+        .badge-disabled {
+            background: #fee9e7;
+            color: #e74c3c;
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: white;
+            color: #1a3b2e;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .btn-primary {
+            background: #27ae60;
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: #2ecc71;
+        }
+
+        .btn-secondary {
+            background: #3498db;
+            color: white;
+            border: none;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+            border: none;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #27ae60;
+            color: #27ae60;
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.85rem;
+        }
+
+        .btn-block {
+            width: 100%;
+        }
+
+        /* Action Bar */
+        .action-bar {
+            display: flex;
+            gap: 16px;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #eef2f6;
+        }
+
+        /* Email Config */
+        .email-config {
+            background: #f8faf9;
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 16px;
+            border-left: 4px solid #27ae60;
+        }
+
+        .email-status {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .email-status.success {
+            background: #e3f7e8;
+            color: #27ae60;
+        }
+
+        .email-status.error {
+            background: #fee9e7;
+            color: #e74c3c;
+        }
+
+        .email-status.info {
+            background: #e1f0fa;
+            color: #3498db;
+        }
+
+        /* Danger Zone */
+        .danger-zone {
+            background: #fee9e7;
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 24px;
+            border: 1px solid #f5c6cb;
+        }
+
+        .danger-zone h4 {
+            color: #e74c3c;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #27ae60;
+        }
+
+        .loading i {
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes slideInDown {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            
+            .glass-header { flex-direction: column; align-items: stretch; }
+            
+            .nav-links { justify-content: center; flex-wrap: wrap; }
+            
+            .settings-grid { grid-template-columns: 1fr; }
+            
+            .dual-input { grid-template-columns: 1fr; }
+            
+            .toggle-group { flex-direction: column; align-items: flex-start; gap: 12px; }
+            
+            .switch { align-self: flex-end; }
+            
+            .action-bar { flex-direction: column; }
+            
+            .btn { width: 100%; justify-content: center; }
+            
+            .schedule-item { flex-direction: column; align-items: flex-start; }
+            
+            .schedule-time { width: auto; }
+            
+            .schedule-actions { width: 100%; justify-content: flex-end; }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #eef2f6;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #27ae60;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #2ecc71;
+        }
+
+        /* Tooltips */
+        .tooltip {
+            position: relative;
+            cursor: help;
+        }
+
+        .tooltip:hover:after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a3b2e;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            z-index: 1000;
+            margin-bottom: 8px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="glass-header">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <i class="fas fa-cog"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>System Configuration</h1>
+                    <span>Dual-plant irrigation settings & preferences</span>
+                </div>
+            </div>
+            <nav class="nav-links">
+                <a href="/dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                <a href="/history"><i class="fas fa-history"></i> History</a>
+                <a href="/predictions"><i class="fas fa-chart-line"></i> Predictions</a>
+                <a href="/settings" class="active"><i class="fas fa-cog"></i> Settings</a>
+            </nav>
+        </header>
+
+        <!-- Main Content -->
+        <div class="settings-wrapper">
+            <!-- Alert Banner -->
+            <div id="alertBanner" class="alert-banner"></div>
+
+            <!-- Settings Grid -->
+            <div class="settings-grid">
+                <!-- Plant 1 Settings -->
+                <div class="settings-card">
+                    <div class="card-header">
+                        <div class="card-icon"><i class="fas fa-leaf"></i></div>
+                        <div>
+                            <h3>Plant 1 Configuration <span class="plant1-badge">Zone 1</span></h3>
+                            <p>Settings for first plant/sensor</p>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-tint"></i> Dry Threshold</label>
+                        <input type="number" class="form-control" id="soilDryThreshold1" min="0" max="1000" step="10">
+                        <div class="form-help">
+                            <i class="fas fa-info-circle"></i> Soil value above which irrigation starts (Default: 500)
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-water"></i> Wet Threshold</label>
+                        <input type="number" class="form-control" id="soilWetThreshold1" min="0" max="1000" step="10">
+                        <div class="form-help">
+                            <i class="fas fa-info-circle"></i> Soil value below which irrigation stops (Default: 300)
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-clock"></i> Max Watering Duration (seconds)</label>
+                        <input type="number" class="form-control" id="pump1MaxDuration" min="30" max="600" step="10" value="120">
+                        <div class="form-help">Maximum time pump can run continuously</div>
+                    </div>
+                </div>
+
+                <!-- Plant 2 Settings -->
+                <div class="settings-card">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: #fff4e0; color: #f39c12;"><i class="fas fa-leaf"></i></div>
+                        <div>
+                            <h3>Plant 2 Configuration <span class="plant2-badge">Zone 2</span></h3>
+                            <p>Settings for second plant/sensor</p>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-tint"></i> Dry Threshold</label>
+                        <input type="number" class="form-control" id="soilDryThreshold2" min="0" max="1000" step="10">
+                        <div class="form-help">
+                            <i class="fas fa-info-circle"></i> Soil value above which irrigation starts (Default: 500)
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-water"></i> Wet Threshold</label>
+                        <input type="number" class="form-control" id="soilWetThreshold2" min="0" max="1000" step="10">
+                        <div class="form-help">
+                            <i class="fas fa-info-circle"></i> Soil value below which irrigation stops (Default: 300)
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-clock"></i> Max Watering Duration (seconds)</label>
+                        <input type="number" class="form-control" id="pump2MaxDuration" min="30" max="600" step="10" value="120">
+                        <div class="form-help">Maximum time pump can run continuously</div>
+                    </div>
+                </div>
+
+                <!-- Irrigation Settings -->
+                <div class="settings-card">
+                    <div class="card-header">
+                        <div class="card-icon"><i class="fas fa-tint"></i></div>
+                        <div>
+                            <h3>Irrigation Control</h3>
+                            <p>Global irrigation settings</p>
+                        </div>
+                    </div>
+                    
+                    <div class="toggle-group">
+                        <div class="toggle-label">
+                            <strong>Auto Mode</strong>
+                            <div class="form-help">System makes automatic irrigation decisions</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="autoMode">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="toggle-group">
+                        <div class="toggle-label">
+                            <strong>Rain Delay</strong>
+                            <div class="form-help">Skip watering when rain is forecasted</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="rainDelay">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-cloud-rain"></i> Rain Threshold (mm)</label>
+                        <input type="number" class="form-control" id="rainThreshold" min="0" max="50" step="0.1">
+                        <div class="form-help">Skip irrigation if rain above this amount</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-sun"></i> Evaporation Rate</label>
+                        <select class="form-control" id="evaporationRate">
+                            <option value="low">Low (Cool/Humid)</option>
+                            <option value="medium" selected>Medium (Normal)</option>
+                            <option value="high">High (Hot/Dry)</option>
+                        </select>
+                        <div class="form-help">Adjusts watering frequency based on climate</div>
+                    </div>
+                </div>
+
+                <!-- Weather Settings -->
+                <div class="settings-card">
+                    <div class="card-header">
+                        <div class="card-icon"><i class="fas fa-cloud-sun"></i></div>
+                        <div>
+                            <h3>Weather Integration</h3>
+                            <p>Weather API and forecast settings</p>
+                        </div>
+                    </div>
+                    
+                    <div class="toggle-group">
+                        <div class="toggle-label">
+                            <strong>Enable Weather Data</strong>
+                            <div class="form-help">Use weather for irrigation decisions</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="weatherIntegration">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-map-marker-alt"></i> Location</label>
+                        <div class="dual-input">
+                            <input type="text" class="form-control" id="locationCity" placeholder="City">
+                            <button class="btn btn-outline btn-sm" onclick="detectLocation()">
+                                <i class="fas fa-location-dot"></i> Detect
+                            </button>
+                        </div>
+                        <div class="form-help" id="locationStatus"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-key"></i> API Key</label>
+                        <input type="password" class="form-control" id="weatherApiKey" value="1d77de94d48b21f123aa67a8cd3e70f4">
+                        <div class="form-help">OpenWeatherMap API key</div>
+                    </div>
+                </div>
+
+                <!-- ML Model Settings -->
+                <div class="settings-card">
+                    <div class="card-header">
+                        <div class="card-icon"><i class="fas fa-brain"></i></div>
+                        <div>
+                            <h3>Machine Learning</h3>
+                            <p>AI prediction model settings</p>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-robot"></i> Model Type</label>
+                        <select class="form-control" id="mlModelType">
+                            <option value="random_forest">Random Forest (Recommended)</option>
+                            <option value="gradient_boosting">Gradient Boosting</option>
+                            <option value="xgboost">XGBoost</option>
+                            <option value="linear">Linear Regression</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-clock"></i> Auto-Train Interval</label>
+                        <input type="number" class="form-control" id="autoTrainInterval" min="5" max="1440" step="5">
+                        <div class="form-help">Minutes between automatic retraining</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-database"></i> Min Training Samples</label>
+                        <input type="number" class="form-control" id="minTrainingSamples" min="10" max="1000" step="10">
+                        <div class="form-help">Minimum data points for training</div>
+                    </div>
+                    
+                    <div class="toggle-group">
+                        <div class="toggle-label">
+                            <strong>Enable Predictions</strong>
+                            <div class="form-help">Show AI predictions on dashboard</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="predictionEnabled">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Pump Schedule -->
+                <div class="settings-card">
+                    <div class="card-header">
+                        <div class="card-icon"><i class="fas fa-clock"></i></div>
+                        <div>
+                            <h3>Pump Schedule</h3>
+                            <p>Scheduled watering times</p>
+                        </div>
+                    </div>
+                    
+                    <div class="schedule-list" id="pumpScheduleList">
+                        <div class="loading"><i class="fas fa-spinner"></i> Loading schedule...</div>
+                    </div>
+                    
+                    <div class="dual-input">
+                        <input type="time" class="form-control" id="newScheduleTime" value="08:00">
+                        <input type="number" class="form-control" id="newScheduleDuration" placeholder="Duration (s)" min="30" max="600" value="120">
+                    </div>
+                    
+                    <div class="dual-input" style="margin-top: 10px;">
+                        <select class="form-control" id="newSchedulePlant">
+                            <option value="both">Both Plants</option>
+                            <option value="plant1">Plant 1 Only</option>
+                            <option value="plant2">Plant 2 Only</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="addPumpSchedule()">
+                            <i class="fas fa-plus"></i> Add Schedule
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Email Alerts & Notifications -->
+                <div class="settings-card">
+                    <div class="card-header">
+                        <div class="card-icon"><i class="fas fa-bell"></i></div>
+                        <div>
+                            <h3>Email Alerts & Notifications</h3>
+                            <p>Configure which alerts trigger emails</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Email Recipient (Simplified) -->
+                    <div class="form-group">
+                        <label><i class="fas fa-envelope"></i> Email Recipient</label>
+                        <input type="email" class="form-control" id="emailRecipient" placeholder="alerts@example.com">
+                        <div class="form-help">Email address to receive alerts (configured in backend)</div>
+                    </div>
+                    
+                    <div class="toggle-group">
+                        <div class="toggle-label">
+                            <strong>Enable Email Alerts</strong>
+                            <div class="form-help">Master switch for all email notifications</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="emailEnabled">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div id="emailConfigSection">
+                        <div class="email-config">
+                            <h4 style="margin-bottom: 16px; color: #1a3b2e;">Alert Triggers</h4>
+                            
+                            <!-- Critical Alerts -->
+                            <div style="margin-bottom: 16px;">
+                                <h5 style="color: #e74c3c; margin-bottom: 8px;">Critical Alerts</h5>
+                                
+                                <div class="toggle-group">
+                                    <div class="toggle-label">
+                                        <strong>No Water Available</strong>
+                                        <div class="form-help">Alert when water tank is empty</div>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="alertNoWater">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                
+                                <div class="toggle-group">
+                                    <div class="toggle-label">
+                                        <strong>Plant 1 Soil Dry</strong>
+                                        <div class="form-help">Alert when Plant 1 soil is too dry</div>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="alertSoilDryPlant1">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                
+                                <div class="toggle-group">
+                                    <div class="toggle-label">
+                                        <strong>Plant 2 Soil Dry</strong>
+                                        <div class="form-help">Alert when Plant 2 soil is too dry</div>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="alertSoilDryPlant2">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- Environmental Alerts -->
+                            <div style="margin-bottom: 16px;">
+                                <h5 style="color: #f39c12; margin-bottom: 8px;">Environmental Alerts</h5>
+                                
+                                <div class="toggle-group">
+                                    <div class="toggle-label">
+                                        <strong>High Temperature</strong>
+                                        <div class="form-help">Alert when temperature exceeds threshold</div>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="alertHighTemp">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                
+                                <div class="toggle-group">
+                                    <div class="toggle-label">
+                                        <strong>Low Humidity</strong>
+                                        <div class="form-help">Alert when humidity below threshold</div>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="alertLowHumidity">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- Pump Operation Alerts -->
+                            <div style="margin-bottom: 16px;">
+                                <h5 style="color: #27ae60; margin-bottom: 8px;">Pump Operation Alerts</h5>
+                                
+                                <div class="toggle-group">
+                                    <div class="toggle-label">
+                                        <strong>Pump Start</strong>
+                                        <div class="form-help">Alert when pump starts automatically</div>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="alertPumpStart">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                
+                                <div class="toggle-group">
+                                    <div class="toggle-label">
+                                        <strong>Pump Running but Soil Still Dry</strong>
+                                        <div class="form-help">Alert when pump runs but soil remains dry</div>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="alertPumpStillDry">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                
+                                <div class="form-group" style="margin-top: 12px;">
+                                    <label>Dry Duration Threshold (minutes)</label>
+                                    <input type="number" class="form-control" id="alertDryDuration" min="1" max="30" step="1" value="5">
+                                    <div class="form-help">Minutes of pumping before alert if soil still dry</div>
+                                </div>
+                            </div>
+                            
+                            <button class="btn btn-outline btn-sm btn-block" onclick="testEmailConfig()">
+                                <i class="fas fa-paper-plane"></i> Send Test Email
+                            </button>
+                            
+                            <div id="emailStatus" class="email-status"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advanced Settings -->
+                <div class="settings-card">
+                    <div class="card-header">
+                        <div class="card-icon"><i class="fas fa-cogs"></i></div>
+                        <div>
+                            <h3>Advanced Settings</h3>
+                            <p>System configuration</p>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-sync-alt"></i> Update Interval (seconds)</label>
+                        <input type="number" class="form-control" id="updateInterval" min="1" max="60" step="1">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-calendar-alt"></i> Prediction Days</label>
+                        <input type="number" class="form-control" id="predictionDays" min="1" max="14" step="1">
+                    </div>
+                    
+                    <div class="toggle-group">
+                        <div class="toggle-label">
+                            <strong>Auto Location Detection</strong>
+                            <div class="form-help">Detect location for weather</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="autoDetectLocation">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-thermometer-half"></i> High Temp Alert (°C)</label>
+                        <input type="number" class="form-control" id="maxTemperature" min="0" max="50" step="1">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-tint"></i> Low Humidity Alert (%)</label>
+                        <input type="number" class="form-control" id="minHumidity" min="0" max="100" step="5">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Bar -->
+            <div class="action-bar">
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="saveAllSettings()">
+                        <i class="fas fa-save"></i> Save All Settings
+                    </button>
+                    <button class="btn btn-outline" onclick="loadSettings()">
+                        <i class="fas fa-redo"></i> Refresh
+                    </button>
+                    <button class="btn btn-outline" onclick="exportSettings()">
+                        <i class="fas fa-download"></i> Export
+                    </button>
+                    <button class="btn btn-outline" onclick="importSettings()">
+                        <i class="fas fa-upload"></i> Import
+                    </button>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="resetToDefaults()">
+                        <i class="fas fa-undo"></i> Reset Defaults
+                    </button>
+                    <button class="btn btn-secondary" onclick="trainModelNow()">
+                        <i class="fas fa-brain"></i> Train Model
+                    </button>
+                </div>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="danger-zone">
+                <h4><i class="fas fa-exclamation-triangle"></i> Danger Zone</h4>
+                <div class="btn-group">
+                    <button class="btn btn-danger" onclick="clearAllData()">
+                        <i class="fas fa-trash"></i> Clear All Data
+                    </button>
+                    <button class="btn btn-danger" onclick="resetSystem()">
+                        <i class="fas fa-skull-crossbones"></i> Factory Reset
+                    </button>
+                    <button class="btn btn-danger" onclick="restartSystem()">
+                        <i class="fas fa-power-off"></i> Restart System
+                    </button>
+                </div>
+                <p style="color: #721c24; margin-top: 12px; font-size: 0.9rem;">
+                    <i class="fas fa-info-circle"></i> These actions are irreversible. Proceed with caution.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let emailConfig = null;
+        let pumpSchedule = [];
+
+        // Load settings on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSettings();
+            loadPumpSchedule();
+        });
+
+        // ==================== LOAD SETTINGS ====================
+        async function loadSettings() {
+            try {
+                const response = await axios.get('/api/settings');
+                const settings = response.data.settings || {};
+                emailConfig = response.data.email_config || {};
+
+                // Plant 1 Settings
+                document.getElementById('soilDryThreshold1').value = settings.soil_dry_threshold1 || '500';
+                document.getElementById('soilWetThreshold1').value = settings.soil_wet_threshold1 || '300';
+                document.getElementById('pump1MaxDuration').value = settings.pump1_max_duration || '120';
+
+                // Plant 2 Settings
+                document.getElementById('soilDryThreshold2').value = settings.soil_dry_threshold2 || '500';
+                document.getElementById('soilWetThreshold2').value = settings.soil_wet_threshold2 || '300';
+                document.getElementById('pump2MaxDuration').value = settings.pump2_max_duration || '120';
+
+                // Irrigation Settings
+                document.getElementById('autoMode').checked = settings.auto_mode === '1';
+                document.getElementById('rainDelay').checked = settings.rain_delay === '1';
+                document.getElementById('rainThreshold').value = settings.rain_threshold || '0.5';
+                document.getElementById('evaporationRate').value = settings.evaporation_rate || 'medium';
+
+                // Weather Settings
+                document.getElementById('weatherIntegration').checked = settings.weather_integration === '1';
+                document.getElementById('locationCity').value = settings.location_city || '';
+                document.getElementById('weatherApiKey').value = settings.weather_api_key || '1d77de94d48b21f123aa67a8cd3e70f4';
+
+                // ML Settings
+                document.getElementById('mlModelType').value = settings.ml_model_type || 'random_forest';
+                document.getElementById('autoTrainInterval').value = settings.auto_train_interval || '10';
+                document.getElementById('minTrainingSamples').value = settings.min_training_samples || '50';
+                document.getElementById('predictionEnabled').checked = settings.prediction_enabled === '1';
+
+                // Advanced Settings
+                document.getElementById('updateInterval').value = settings.update_interval || '5';
+                document.getElementById('predictionDays').value = settings.prediction_days || '7';
+                document.getElementById('autoDetectLocation').checked = settings.auto_detect_location === '1';
+                document.getElementById('maxTemperature').value = settings.max_temperature || '35';
+                document.getElementById('minHumidity').value = settings.min_humidity || '30';
+
+                // Email Settings (simplified)
+                document.getElementById('emailEnabled').checked = emailConfig.enabled || false;
+                document.getElementById('emailRecipient').value = emailConfig.recipient || '';
+
+                // Alert Notification Settings
+                document.getElementById('alertNoWater').checked = settings.alert_no_water === '1';
+                document.getElementById('alertPumpStart').checked = settings.alert_pump_start === '1';
+                document.getElementById('alertPumpStillDry').checked = settings.alert_pump_still_dry === '1';
+                document.getElementById('alertDryDuration').value = settings.alert_dry_duration || '5';
+                document.getElementById('alertHighTemp').checked = settings.alert_high_temp === '1';
+                document.getElementById('alertLowHumidity').checked = settings.alert_low_humidity === '1';
+                document.getElementById('alertSoilDryPlant1').checked = settings.alert_soil_dry_plant1 === '1';
+                document.getElementById('alertSoilDryPlant2').checked = settings.alert_soil_dry_plant2 === '1';
+
+                showAlert('success', 'Settings loaded successfully');
+
+            } catch (error) {
+                console.error('Error loading settings:', error);
+                showAlert('error', 'Failed to load settings');
+            }
+        }
+
+        // ==================== LOAD PUMP SCHEDULE ====================
+        async function loadPumpSchedule() {
+            try {
+                const response = await axios.get('/api/settings');
+                pumpSchedule = response.data.pump_schedule || [];
+                
+                const container = document.getElementById('pumpScheduleList');
+                
+                if (pumpSchedule.length === 0) {
+                    container.innerHTML = '<div style="text-align: center; padding: 20px; color: #5a7b6b;">No schedules configured</div>';
+                    return;
+                }
+                
+                let html = '';
+                pumpSchedule.forEach(item => {
+                    const time = `${item.hour.toString().padStart(2,'0')}:${item.minute.toString().padStart(2,'0')}`;
+                    const plantText = item.plant === 'plant1' ? '🌱 Plant 1' : 
+                                     item.plant === 'plant2' ? '🍊 Plant 2' : '🌿 Both Plants';
+                    
+                    html += `
+                        <div class="schedule-item">
+                            <div class="schedule-time">
+                                <i class="fas fa-clock"></i> ${time}
+                            </div>
+                            <div class="schedule-duration">
+                                <strong>${item.duration}s</strong> - ${plantText}
+                                <span class="schedule-badge ${item.enabled ? 'badge-enabled' : 'badge-disabled'}">
+                                    ${item.enabled ? 'Enabled' : 'Disabled'}
+                                </span>
+                            </div>
+                            <div class="schedule-actions">
+                                <button class="btn btn-sm btn-outline" onclick="toggleSchedule(${item.id})" title="Toggle">
+                                    <i class="fas ${item.enabled ? 'fa-pause' : 'fa-play'}"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteSchedule(${item.id})" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                container.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error loading pump schedule:', error);
+                document.getElementById('pumpScheduleList').innerHTML = 
+                    '<div style="color: #e74c3c; text-align: center;">Error loading schedule</div>';
+            }
+        }
+
+        // ==================== ADD PUMP SCHEDULE ====================
+        async function addPumpSchedule() {
+            const time = document.getElementById('newScheduleTime').value;
+            const duration = document.getElementById('newScheduleDuration').value;
+            const plant = document.getElementById('newSchedulePlant').value;
+            
+            if (!time || !duration) {
+                showAlert('error', 'Please enter time and duration');
+                return;
+            }
+            
+            const [hours, minutes] = time.split(':').map(Number);
+            
+            const newSchedule = {
+                id: Date.now(),
+                hour: hours,
+                minute: minutes,
+                duration: parseInt(duration),
+                plant: plant,
+                enabled: true
+            };
+            
+            pumpSchedule.push(newSchedule);
+            
+            try {
+                await axios.post('/api/settings', {
+                    pump_schedule: pumpSchedule
+                });
+                
+                showAlert('success', 'Schedule added successfully');
+                loadPumpSchedule();
+                
+            } catch (error) {
+                console.error('Error adding schedule:', error);
+                showAlert('error', 'Failed to add schedule');
+            }
+        }
+
+        // ==================== TOGGLE SCHEDULE ====================
+        async function toggleSchedule(id) {
+            const schedule = pumpSchedule.find(s => s.id === id);
+            if (schedule) {
+                schedule.enabled = !schedule.enabled;
+                
+                try {
+                    await axios.post('/api/settings', {
+                        pump_schedule: pumpSchedule
+                    });
+                    loadPumpSchedule();
+                } catch (error) {
+                    console.error('Error toggling schedule:', error);
+                }
+            }
+        }
+
+        // ==================== DELETE SCHEDULE ====================
+        async function deleteSchedule(id) {
+            if (!confirm('Delete this schedule?')) return;
+            
+            pumpSchedule = pumpSchedule.filter(s => s.id !== id);
+            
+            try {
+                await axios.post('/api/settings', {
+                    pump_schedule: pumpSchedule
+                });
+                showAlert('success', 'Schedule deleted');
+                loadPumpSchedule();
+            } catch (error) {
+                console.error('Error deleting schedule:', error);
+                showAlert('error', 'Failed to delete schedule');
+            }
+        }
+
+        // ==================== DETECT LOCATION ====================
+        async function detectLocation() {
+            const status = document.getElementById('locationStatus');
+            status.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Detecting...';
+            
+            try {
+                const response = await axios.get('/api/location');
+                const location = response.data.location;
+                
+                if (location) {
+                    document.getElementById('locationCity').value = location.city;
+                    status.innerHTML = `<i class="fas fa-check-circle" style="color: #27ae60;"></i> Detected: ${location.city}`;
+                } else {
+                    status.innerHTML = '<i class="fas fa-exclamation-triangle" style="color: #f39c12;"></i> Could not detect location';
+                }
+            } catch (error) {
+                console.error('Error detecting location:', error);
+                status.innerHTML = '<i class="fas fa-times-circle" style="color: #e74c3c;"></i> Detection failed';
+            }
+        }
+
+        // ==================== TEST EMAIL ====================
+        async function testEmailConfig() {
+            const recipient = document.getElementById('emailRecipient').value;
+            
+            if (!recipient) {
+                showEmailStatus('error', 'Please enter recipient email');
+                return;
+            }
+            
+            showEmailStatus('info', 'Sending test email...');
+            
+            try {
+                const response = await axios.post('/api/test-email', {
+                    recipient_email: recipient
+                });
+                
+                if (response.data.status === 'success') {
+                    showEmailStatus('success', 'Test email sent successfully! Check your inbox.');
+                } else {
+                    showEmailStatus('error', response.data.message || 'Failed to send test email');
+                }
+            } catch (error) {
+                console.error('Error testing email:', error);
+                showEmailStatus('error', error.response?.data?.message || 'Failed to send test email');
+            }
+        }
+
+        // ==================== SAVE ALL SETTINGS ====================
+        async function saveAllSettings() {
+            const settings = {
+                // Plant 1
+                soil_dry_threshold1: document.getElementById('soilDryThreshold1').value,
+                soil_wet_threshold1: document.getElementById('soilWetThreshold1').value,
+                pump1_max_duration: document.getElementById('pump1MaxDuration').value,
+                
+                // Plant 2
+                soil_dry_threshold2: document.getElementById('soilDryThreshold2').value,
+                soil_wet_threshold2: document.getElementById('soilWetThreshold2').value,
+                pump2_max_duration: document.getElementById('pump2MaxDuration').value,
+                
+                // Irrigation
+                auto_mode: document.getElementById('autoMode').checked ? '1' : '0',
+                rain_delay: document.getElementById('rainDelay').checked ? '1' : '0',
+                rain_threshold: document.getElementById('rainThreshold').value,
+                evaporation_rate: document.getElementById('evaporationRate').value,
+                
+                // Weather
+                weather_integration: document.getElementById('weatherIntegration').checked ? '1' : '0',
+                location_city: document.getElementById('locationCity').value,
+                weather_api_key: document.getElementById('weatherApiKey').value,
+                
+                // ML
+                ml_model_type: document.getElementById('mlModelType').value,
+                auto_train_interval: document.getElementById('autoTrainInterval').value,
+                min_training_samples: document.getElementById('minTrainingSamples').value,
+                prediction_enabled: document.getElementById('predictionEnabled').checked ? '1' : '0',
+                
+                // Advanced
+                update_interval: document.getElementById('updateInterval').value,
+                prediction_days: document.getElementById('predictionDays').value,
+                auto_detect_location: document.getElementById('autoDetectLocation').checked ? '1' : '0',
+                max_temperature: document.getElementById('maxTemperature').value,
+                min_humidity: document.getElementById('minHumidity').value,
+                
+                // Email (simplified)
+                email_enabled: document.getElementById('emailEnabled').checked ? '1' : '0',
+                email_recipient: document.getElementById('emailRecipient').value,
+                
+                // Alert Notifications
+                alert_no_water: document.getElementById('alertNoWater').checked ? '1' : '0',
+                alert_pump_start: document.getElementById('alertPumpStart').checked ? '1' : '0',
+                alert_pump_still_dry: document.getElementById('alertPumpStillDry').checked ? '1' : '0',
+                alert_dry_duration: document.getElementById('alertDryDuration').value,
+                alert_high_temp: document.getElementById('alertHighTemp').checked ? '1' : '0',
+                alert_low_humidity: document.getElementById('alertLowHumidity').checked ? '1' : '0',
+                alert_soil_dry_plant1: document.getElementById('alertSoilDryPlant1').checked ? '1' : '0',
+                alert_soil_dry_plant2: document.getElementById('alertSoilDryPlant2').checked ? '1' : '0'
+            };
+            
+            try {
+                await axios.post('/api/settings', { settings: settings, pump_schedule: pumpSchedule });
+                showAlert('success', 'All settings saved successfully');
+                
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                showAlert('error', 'Failed to save settings');
+            }
+        }
+
+        // ==================== TRAIN MODEL ====================
+        async function trainModelNow() {
+            if (!confirm('Train ML model now? This may take a moment.')) return;
+            
+            try {
+                showAlert('info', 'Training model...');
+                const response = await axios.post('/api/train-model');
+                
+                if (response.data.status === 'success') {
+                    showAlert('success', 'Model trained successfully');
+                } else {
+                    showAlert('error', response.data.message || 'Training failed');
+                }
+            } catch (error) {
+                console.error('Error training model:', error);
+                showAlert('error', 'Failed to train model');
+            }
+        }
+
+        // ==================== RESET TO DEFAULTS ====================
+        function resetToDefaults() {
+            if (!confirm('Reset all settings to factory defaults?')) return;
+            
+            const defaults = {
+                soilDryThreshold1: '500',
+                soilWetThreshold1: '300',
+                soilDryThreshold2: '500',
+                soilWetThreshold2: '300',
+                autoMode: true,
+                weatherIntegration: true,
+                mlModelType: 'random_forest',
+                autoTrainInterval: '10',
+                minTrainingSamples: '50',
+                updateInterval: '5',
+                predictionDays: '7',
+                maxTemperature: '35',
+                minHumidity: '30',
+                rainThreshold: '0.5',
+                alertNoWater: true,
+                alertPumpStart: false,
+                alertPumpStillDry: false,
+                alertDryDuration: '5',
+                alertHighTemp: true,
+                alertLowHumidity: true,
+                alertSoilDryPlant1: true,
+                alertSoilDryPlant2: true
+            };
+            
+            // Apply defaults to form
+            document.getElementById('soilDryThreshold1').value = defaults.soilDryThreshold1;
+            document.getElementById('soilWetThreshold1').value = defaults.soilWetThreshold1;
+            document.getElementById('soilDryThreshold2').value = defaults.soilDryThreshold2;
+            document.getElementById('soilWetThreshold2').value = defaults.soilWetThreshold2;
+            document.getElementById('autoMode').checked = defaults.autoMode;
+            document.getElementById('weatherIntegration').checked = defaults.weatherIntegration;
+            document.getElementById('mlModelType').value = defaults.mlModelType;
+            document.getElementById('autoTrainInterval').value = defaults.autoTrainInterval;
+            document.getElementById('minTrainingSamples').value = defaults.minTrainingSamples;
+            document.getElementById('updateInterval').value = defaults.updateInterval;
+            document.getElementById('predictionDays').value = defaults.predictionDays;
+            document.getElementById('maxTemperature').value = defaults.maxTemperature;
+            document.getElementById('minHumidity').value = defaults.minHumidity;
+            document.getElementById('rainThreshold').value = defaults.rainThreshold;
+            document.getElementById('alertNoWater').checked = defaults.alertNoWater;
+            document.getElementById('alertPumpStart').checked = defaults.alertPumpStart;
+            document.getElementById('alertPumpStillDry').checked = defaults.alertPumpStillDry;
+            document.getElementById('alertDryDuration').value = defaults.alertDryDuration;
+            document.getElementById('alertHighTemp').checked = defaults.alertHighTemp;
+            document.getElementById('alertLowHumidity').checked = defaults.alertLowHumidity;
+            document.getElementById('alertSoilDryPlant1').checked = defaults.alertSoilDryPlant1;
+            document.getElementById('alertSoilDryPlant2').checked = defaults.alertSoilDryPlant2;
+            
+            showAlert('info', 'Settings reset to defaults. Click Save to apply.');
+        }
+
+        // ==================== EXPORT SETTINGS ====================
+        function exportSettings() {
+            const settings = {};
+            const inputs = document.querySelectorAll('.form-control, input[type="checkbox"]');
+            
+            inputs.forEach(input => {
+                if (input.id && input.id !== 'newScheduleTime' && input.id !== 'newScheduleDuration') {
+                    if (input.type === 'checkbox') {
+                        settings[input.id] = input.checked;
+                    } else {
+                        settings[input.id] = input.value;
+                    }
+                }
+            });
+            
+            const dataStr = JSON.stringify(settings, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `irrigation-settings-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            
+            showAlert('success', 'Settings exported');
+        }
+
+        // ==================== IMPORT SETTINGS ====================
+        function importSettings() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    try {
+                        const settings = JSON.parse(e.target.result);
+                        
+                        // Apply to form
+                        Object.keys(settings).forEach(key => {
+                            const element = document.getElementById(key);
+                            if (element) {
+                                if (element.type === 'checkbox') {
+                                    element.checked = settings[key];
+                                } else {
+                                    element.value = settings[key];
+                                }
+                            }
+                        });
+                        
+                        showAlert('success', 'Settings imported. Click Save to apply.');
+                    } catch (error) {
+                        showAlert('error', 'Invalid settings file');
+                    }
+                };
+                
+                reader.readAsText(file);
+            };
+            
+            input.click();
+        }
+
+        // ==================== CLEAR ALL DATA ====================
+        async function clearAllData() {
+            if (!confirm('⚠️ WARNING: This will delete ALL historical data! Continue?')) return;
+            if (!confirm('ARE YOU ABSOLUTELY SURE? This cannot be undone.')) return;
+            
+            showAlert('warning', 'Clearing data...');
+            
+            try {
+                const response = await axios.post('/api/clear-data');
+                if (response.data.status === 'success') {
+                    showAlert('success', 'All data cleared successfully');
+                } else {
+                    showAlert('error', response.data.message || 'Failed to clear data');
+                }
+            } catch (error) {
+                console.error('Error clearing data:', error);
+                showAlert('error', 'Failed to clear data');
+            }
+        }
+
+        // ==================== RESET SYSTEM ====================
+        function resetSystem() {
+            if (!confirm('⚠️ DANGER: Factory reset will erase all settings and data! Continue?')) return;
+            if (!confirm('ARE YOU ABSOLUTELY SURE? This cannot be undone.')) return;
+            
+            showAlert('warning', 'Resetting system...');
+            
+            setTimeout(() => {
+                showAlert('success', 'System reset complete. Page will reload.');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            }, 2000);
+        }
+
+        // ==================== RESTART SYSTEM ====================
+        function restartSystem() {
+            if (!confirm('Restart the system? Dashboard will reload.')) return;
+            
+            showAlert('info', 'Restarting system...');
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        }
+
+        // ==================== UTILITIES ====================
+        function showEmailStatus(type, message) {
+            const statusDiv = document.getElementById('emailStatus');
+            statusDiv.className = `email-status ${type}`;
+            statusDiv.textContent = message;
+            statusDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function showAlert(type, message) {
+            const banner = document.getElementById('alertBanner');
+            banner.className = `alert-banner alert-${type}`;
+            banner.innerHTML = `
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : 
+                                  type === 'error' ? 'fa-exclamation-circle' :
+                                  type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i>
+                <span>${message}</span>
+            `;
+            banner.style.display = 'flex';
+            
+            setTimeout(() => {
+                banner.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

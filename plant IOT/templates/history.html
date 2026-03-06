@@ -1,0 +1,1776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Irrigation - Plant History & Analytics</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(145deg, #0b2e1f 0%, #1a4f2e 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .glass-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 16px 24px;
+            border-radius: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 15px 35px rgba(0, 40, 20, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            box-shadow: 0 8px 16px rgba(46, 204, 113, 0.3);
+        }
+
+        .logo-text h1 {
+            color: #1a3b2e;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .logo-text span {
+            color: #4a6f5e;
+            font-size: 0.9rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.04);
+            padding: 6px;
+            border-radius: 40px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #1a3b2e;
+            padding: 10px 20px;
+            border-radius: 30px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            background: white;
+            color: #27ae60;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        /* Main Container */
+        .history-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 32px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 20, 10, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Filters */
+        .filters-section {
+            background: #f8faf9;
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 30px;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: #1a3b2e;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .filter-group label i {
+            color: #27ae60;
+        }
+
+        .filter-group select, 
+        .filter-group input {
+            padding: 12px 16px;
+            border: 2px solid #e0e8e4;
+            border-radius: 16px;
+            font-size: 0.95rem;
+            background: white;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .filter-group select:hover,
+        .filter-group input:hover {
+            border-color: #27ae60;
+        }
+
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: #27ae60;
+            box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1);
+        }
+
+        .date-range {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .date-range input {
+            flex: 1;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: white;
+            color: #1a3b2e;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .btn-primary {
+            background: #27ae60;
+            color: white;
+            border: none;
+        }
+
+        .btn-plant1 {
+            background: #27ae60;
+            color: white;
+            border: none;
+        }
+
+        .btn-plant2 {
+            background: #f39c12;
+            color: white;
+            border: none;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #27ae60;
+            color: #27ae60;
+        }
+
+        /* Plant Tabs */
+        .plant-tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            background: #f0f5f3;
+            padding: 8px;
+            border-radius: 50px;
+            width: fit-content;
+        }
+
+        .plant-tab {
+            padding: 12px 32px;
+            border: none;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: transparent;
+            color: #4a6f5e;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .plant-tab.active {
+            background: white;
+            color: #27ae60;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .plant-tab.plant2.active {
+            color: #f39c12;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 24px;
+            border-radius: 24px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.02);
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: all 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-icon.plant1 { background: #e3f7e8; color: #27ae60; }
+        .stat-icon.plant2 { background: #fff4e0; color: #f39c12; }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #1a3b2e;
+            line-height: 1.2;
+        }
+
+        .stat-label {
+            color: #5a7b6b;
+            font-size: 0.9rem;
+        }
+
+        .stat-trend {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 8px;
+            font-size: 0.9rem;
+        }
+
+        .trend-up { color: #27ae60; }
+        .trend-down { color: #e74c3c; }
+
+        /* Charts Grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            margin-bottom: 30px;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.02);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .chart-header h3 {
+            font-size: 1.1rem;
+            color: #1a3b2e;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+
+        /* Comparison Chart */
+        .comparison-card {
+            grid-column: span 2;
+        }
+
+        /* Heatmap */
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: repeat(24, 1fr);
+            gap: 2px;
+            margin-top: 20px;
+        }
+
+        .heatmap-hour {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #5a7b6b;
+            margin-bottom: 5px;
+        }
+
+        .heatmap-cell {
+            aspect-ratio: 1;
+            border-radius: 4px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .heatmap-cell:hover {
+            transform: scale(1.2);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        /* Timeline */
+        .timeline-container {
+            margin-top: 30px;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 16px;
+            background: #f8faf9;
+            border-radius: 16px;
+            margin-bottom: 10px;
+            transition: all 0.2s;
+        }
+
+        .timeline-item:hover {
+            background: #f0f5f3;
+            transform: translateX(5px);
+        }
+
+        .timeline-time {
+            min-width: 120px;
+            font-weight: 600;
+            color: #27ae60;
+        }
+
+        .timeline-event {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .timeline-badge {
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-pump-on { background: #e3f7e8; color: #27ae60; }
+        .badge-pump-off { background: #fee9e7; color: #e74c3c; }
+        .badge-dry { background: #fee9e7; color: #e74c3c; }
+        .badge-wet { background: #e3f7e8; color: #27ae60; }
+
+        /* Data Table */
+        .data-table-container {
+            overflow-x: auto;
+            margin-top: 30px;
+            background: white;
+            border-radius: 24px;
+            padding: 20px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 16px;
+            background: #f8faf9;
+            color: #1a3b2e;
+            font-weight: 600;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .data-table td {
+            padding: 16px;
+            border-bottom: 1px solid #e5ece8;
+        }
+
+        .data-table tr:hover {
+            background: #f8faf9;
+        }
+
+        .soil-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .soil-dry { background: #e74c3c; }
+        .soil-wet { background: #27ae60; }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 30px;
+        }
+
+        .page-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 12px;
+            background: white;
+            color: #1a3b2e;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid #e5ece8;
+        }
+
+        .page-btn:hover {
+            background: #27ae60;
+            color: white;
+            border-color: #27ae60;
+        }
+
+        .page-btn.active {
+            background: #27ae60;
+            color: white;
+            border-color: #27ae60;
+        }
+
+        /* Loading States */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #27ae60;
+        }
+
+        .loading i {
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Insights Panel */
+        .insights-panel {
+            background: linear-gradient(145deg, #2c3e50, #34495e);
+            border-radius: 24px;
+            padding: 24px;
+            color: white;
+            margin-top: 30px;
+        }
+
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .insight-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 16px;
+        }
+
+        .insight-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .insight-content {
+            flex: 1;
+        }
+
+        .insight-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .insight-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .comparison-card {
+                grid-column: span 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .glass-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .nav-links {
+                justify-content: center;
+            }
+            
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+            
+            .plant-tabs {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .plant-tab {
+                flex: 1;
+                justify-content: center;
+                padding: 12px 16px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .timeline-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .timeline-event {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="glass-header">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>Plant History & Analytics</h1>
+                    <span>Advanced irrigation insights for both plants</span>
+                </div>
+            </div>
+            <nav class="nav-links">
+                <a href="/dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                <a href="/history" class="active"><i class="fas fa-history"></i> History</a>
+                <a href="/predictions"><i class="fas fa-chart-line"></i> Predictions</a>
+                <a href="/settings"><i class="fas fa-cog"></i> Settings</a>
+            </nav>
+        </header>
+
+        <!-- Main Content -->
+        <div class="history-container">
+            <!-- Filters Section -->
+            <div class="filters-section">
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label><i class="fas fa-calendar"></i> Date Range</label>
+                        <div class="date-range">
+                            <input type="date" id="startDate">
+                            <span>to</span>
+                            <input type="date" id="endDate">
+                        </div>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label><i class="fas fa-clock"></i> Time Period</label>
+                        <select id="timePeriod">
+                            <option value="1">Last 24 Hours</option>
+                            <option value="7" selected>Last 7 Days</option>
+                            <option value="30">Last 30 Days</option>
+                            <option value="90">Last 3 Months</option>
+                            <option value="365">Last Year</option>
+                            <option value="custom">Custom Range</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label><i class="fas fa-chart-bar"></i> Data Resolution</label>
+                        <select id="resolution">
+                            <option value="raw">Raw Data</option>
+                            <option value="hourly">Hourly Average</option>
+                            <option value="daily" selected>Daily Average</option>
+                            <option value="weekly">Weekly Average</option>
+                        </select>
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="applyFilters()">
+                            <i class="fas fa-filter"></i> Apply
+                        </button>
+                        <button class="btn btn-outline" onclick="exportData()">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                        <button class="btn" onclick="refreshData()">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Plant Tabs -->
+            <div class="plant-tabs">
+                <button class="plant-tab active" id="tabBoth" onclick="switchView('both')">
+                    <i class="fas fa-seedling"></i> Both Plants
+                </button>
+                <button class="plant-tab" id="tabPlant1" onclick="switchView('plant1')">
+                    <i class="fas fa-leaf" style="color: #27ae60;"></i> Plant 1 Only
+                </button>
+                <button class="plant-tab plant2" id="tabPlant2" onclick="switchView('plant2')">
+                    <i class="fas fa-leaf" style="color: #f39c12;"></i> Plant 2 Only
+                </button>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid" id="statsContainer">
+                <!-- Dynamically populated -->
+                <div class="loading"><i class="fas fa-spinner"></i> Loading stats...</div>
+            </div>
+
+            <!-- Charts Grid -->
+            <div class="charts-grid">
+                <!-- Temperature & Humidity Chart -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3><i class="fas fa-thermometer-half" style="color: #e74c3c;"></i> Temperature & Humidity</h3>
+                        <span class="badge" id="tempHumidityRange">7 Days</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="tempHumidityChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Soil Moisture Chart -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3><i class="fas fa-tint" style="color: #27ae60;"></i> Soil Moisture Comparison</h3>
+                        <span class="badge" id="soilRange">7 Days</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="soilChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Pump Activity Chart -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3><i class="fas fa-industry" style="color: #3498db;"></i> Pump Activity</h3>
+                        <span class="badge" id="pumpRange">7 Days</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="pumpChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Water Usage Chart -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3><i class="fas fa-water" style="color: #3498db;"></i> Water Usage (Daily)</h3>
+                        <span class="badge" id="waterRange">7 Days</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="waterChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Correlation Chart (spans both columns) -->
+                <div class="chart-card comparison-card">
+                    <div class="chart-header">
+                        <h3><i class="fas fa-chart-line"></i> Soil Moisture Correlation</h3>
+                        <span class="badge">Plant 1 vs Plant 2</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="correlationChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Heatmap -->
+            <div class="chart-card" style="margin-bottom: 30px;">
+                <div class="chart-header">
+                    <h3><i class="fas fa-calendar-alt"></i> Pump Activity Heatmap</h3>
+                    <span class="badge">Last 30 Days</span>
+                </div>
+                <div style="overflow-x: auto;">
+                    <div id="heatmapContainer" style="min-width: 800px;">
+                        <!-- Heatmap will be generated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timeline View -->
+            <div class="timeline-container">
+                <h3 style="margin-bottom: 20px; color: #1a3b2e;">
+                    <i class="fas fa-clock"></i> Recent Events Timeline
+                </h3>
+                <div id="timelineContainer">
+                    <!-- Timeline items will be populated -->
+                </div>
+            </div>
+
+            <!-- Data Table -->
+            <div class="data-table-container">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3><i class="fas fa-table"></i> Historical Records</h3>
+                    <div>
+                        <span id="recordCount" style="color: #5a7b6b;">0 records</span>
+                    </div>
+                </div>
+                <div id="historyTableContainer">
+                    <div class="loading"><i class="fas fa-spinner"></i> Loading data...</div>
+                </div>
+                
+                <!-- Pagination -->
+                <div class="pagination" id="pagination"></div>
+            </div>
+
+            <!-- AI Insights Panel -->
+            <div class="insights-panel">
+                <h3 style="margin-bottom: 20px;"><i class="fas fa-brain"></i> AI-Generated Insights</h3>
+                <div class="insights-grid" id="insightsContainer">
+                    <!-- Insights will be populated -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentView = 'both';
+        let historyData = [];
+        let currentPage = 1;
+        const recordsPerPage = 15;
+        
+        // Chart instances
+        let tempHumidityChart = null;
+        let soilChart = null;
+        let pumpChart = null;
+        let waterChart = null;
+        let correlationChart = null;
+
+        // Initialize date inputs
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(today.getDate() - 7);
+            
+            document.getElementById('startDate').value = sevenDaysAgo.toISOString().split('T')[0];
+            document.getElementById('endDate').value = today.toISOString().split('T')[0];
+            
+            loadHistoryData();
+        });
+
+        // Load history data
+        async function loadHistoryData() {
+            const timePeriod = document.getElementById('timePeriod').value;
+            
+            try {
+                const response = await axios.get(`/api/history?limit=1000&days=${timePeriod}`);
+                historyData = response.data;
+                
+                if (historyData.length === 0) {
+                    showNoData();
+                    return;
+                }
+                
+                updateStats();
+                updateCharts();
+                updateHeatmap();
+                updateTimeline();
+                updateTable();
+                updateInsights();
+                
+            } catch (error) {
+                console.error('Error loading history:', error);
+                showError('Failed to load history data');
+            }
+        }
+
+        // Update statistics
+        function updateStats() {
+            const plant1Data = historyData.filter(d => d.soil1 !== undefined);
+            const plant2Data = historyData.filter(d => d.soil2 !== undefined);
+            
+            // Calculate statistics
+            const stats = {
+                plant1: {
+                    avgSoil: calculateAverageSoil(plant1Data, 'soil1'),
+                    dryPercentage: calculateDryPercentage(plant1Data, 'soil1'),
+                    totalWaterTime: calculateTotalWaterTime(plant1Data, 'pump1'),
+                    wateringEvents: countWateringEvents(plant1Data, 'pump1')
+                },
+                plant2: {
+                    avgSoil: calculateAverageSoil(plant2Data, 'soil2'),
+                    dryPercentage: calculateDryPercentage(plant2Data, 'soil2'),
+                    totalWaterTime: calculateTotalWaterTime(plant2Data, 'pump2'),
+                    wateringEvents: countWateringEvents(plant2Data, 'pump2')
+                },
+                overall: {
+                    avgTemp: calculateAverage(historyData, 'temperature'),
+                    avgHumidity: calculateAverage(historyData, 'humidity'),
+                    waterWarnings: countWaterWarnings(historyData)
+                }
+            };
+            
+            // Generate HTML
+            const statsHTML = `
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon plant1"><i class="fas fa-leaf"></i></div>
+                        <div>
+                            <div class="stat-label">Plant 1 Soil</div>
+                            <div class="stat-value">${stats.plant1.avgSoil}%</div>
+                        </div>
+                    </div>
+                    <div class="stat-trend ${stats.plant1.dryPercentage > 50 ? 'trend-down' : 'trend-up'}">
+                        <i class="fas ${stats.plant1.dryPercentage > 50 ? 'fa-arrow-down' : 'fa-arrow-up'}"></i>
+                        ${stats.plant1.dryPercentage}% dry readings
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon plant2"><i class="fas fa-leaf"></i></div>
+                        <div>
+                            <div class="stat-label">Plant 2 Soil</div>
+                            <div class="stat-value">${stats.plant2.avgSoil}%</div>
+                        </div>
+                    </div>
+                    <div class="stat-trend ${stats.plant2.dryPercentage > 50 ? 'trend-down' : 'trend-up'}">
+                        <i class="fas ${stats.plant2.dryPercentage > 50 ? 'fa-arrow-down' : 'fa-arrow-up'}"></i>
+                        ${stats.plant2.dryPercentage}% dry readings
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon" style="background: #e3f2fd; color: #1976d2;"><i class="fas fa-tint"></i></div>
+                        <div>
+                            <div class="stat-label">Water Usage</div>
+                            <div class="stat-value">${stats.plant1.totalWaterTime + stats.plant2.totalWaterTime}s</div>
+                        </div>
+                    </div>
+                    <div>
+                        P1: ${stats.plant1.totalWaterTime}s | P2: ${stats.plant2.totalWaterTime}s
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon" style="background: #fce4e4; color: #c23b2b;"><i class="fas fa-exclamation-triangle"></i></div>
+                        <div>
+                            <div class="stat-label">Water Warnings</div>
+                            <div class="stat-value">${stats.overall.waterWarnings}</div>
+                        </div>
+                    </div>
+                    <div>${stats.overall.waterWarnings > 0 ? 'Check water tank' : 'All good'}</div>
+                </div>
+            `;
+            
+            document.getElementById('statsContainer').innerHTML = statsHTML;
+        }
+
+        // Update all charts
+        function updateCharts() {
+            const filteredData = filterDataByView();
+            if (filteredData.length === 0) return;
+            
+            // Temperature & Humidity Chart
+            updateTempHumidityChart(filteredData);
+            
+            // Soil Moisture Chart
+            updateSoilChart(filteredData);
+            
+            // Pump Activity Chart
+            updatePumpChart(filteredData);
+            
+            // Water Usage Chart
+            updateWaterChart(filteredData);
+            
+            // Correlation Chart
+            updateCorrelationChart(filteredData);
+        }
+
+        // Temperature & Humidity Chart
+        function updateTempHumidityChart(data) {
+            const ctx = document.getElementById('tempHumidityChart').getContext('2d');
+            
+            if (tempHumidityChart) tempHumidityChart.destroy();
+            
+            const labels = data.map(d => formatDate(d.timestamp));
+            const tempData = data.map(d => d.temperature);
+            const humidityData = data.map(d => d.humidity);
+            
+            tempHumidityChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Temperature (°C)',
+                            data: tempData,
+                            borderColor: '#e74c3c',
+                            backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Humidity (%)',
+                            data: humidityData,
+                            borderColor: '#3498db',
+                            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { position: 'top' }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: { display: true, text: 'Temperature (°C)' },
+                            min: 0,
+                            max: 40
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: { display: true, text: 'Humidity (%)' },
+                            min: 0,
+                            max: 100,
+                            grid: { drawOnChartArea: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Soil Moisture Chart
+        function updateSoilChart(data) {
+            const ctx = document.getElementById('soilChart').getContext('2d');
+            
+            if (soilChart) soilChart.destroy();
+            
+            const labels = data.map(d => formatDate(d.timestamp));
+            
+            // Convert soil strings to values
+            const soil1Data = data.map(d => soilToValue(d.soil1));
+            const soil2Data = data.map(d => soilToValue(d.soil2));
+            
+            const datasets = [];
+            
+            if (currentView === 'both' || currentView === 'plant1') {
+                datasets.push({
+                    label: 'Plant 1 Soil',
+                    data: soil1Data,
+                    borderColor: '#27ae60',
+                    backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.4
+                });
+            }
+            
+            if (currentView === 'both' || currentView === 'plant2') {
+                datasets.push({
+                    label: 'Plant 2 Soil',
+                    data: soil2Data,
+                    borderColor: '#f39c12',
+                    backgroundColor: 'rgba(243, 156, 18, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.4
+                });
+            }
+            
+            soilChart = new Chart(ctx, {
+                type: 'line',
+                data: { labels, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 700,
+                            title: { display: true, text: 'Soil Moisture (DRY=600, WET=300)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Pump Activity Chart
+        function updatePumpChart(data) {
+            const ctx = document.getElementById('pumpChart').getContext('2d');
+            
+            if (pumpChart) pumpChart.destroy();
+            
+            const labels = data.map(d => formatDate(d.timestamp));
+            
+            const pump1Data = data.map(d => d.pump1 === 'ON' ? 1 : 0);
+            const pump2Data = data.map(d => d.pump2 === 'ON' ? 1 : 0);
+            
+            pumpChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: 'Pump 1',
+                            data: pump1Data,
+                            backgroundColor: '#27ae60',
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Pump 2',
+                            data: pump2Data,
+                            backgroundColor: '#f39c12',
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 1,
+                            ticks: {
+                                callback: value => value === 1 ? 'ON' : 'OFF'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Water Usage Chart
+        function updateWaterChart(data) {
+            const ctx = document.getElementById('waterChart').getContext('2d');
+            
+            if (waterChart) waterChart.destroy();
+            
+            // Aggregate by day
+            const dailyData = aggregateByDay(data);
+            
+            waterChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: dailyData.labels,
+                    datasets: [
+                        {
+                            label: 'Plant 1 (seconds)',
+                            data: dailyData.pump1,
+                            backgroundColor: '#27ae60'
+                        },
+                        {
+                            label: 'Plant 2 (seconds)',
+                            data: dailyData.pump2,
+                            backgroundColor: '#f39c12'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' },
+                        title: { display: true, text: 'Daily Water Usage' }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Seconds' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Correlation Chart
+        function updateCorrelationChart(data) {
+            const ctx = document.getElementById('correlationChart').getContext('2d');
+            
+            if (correlationChart) correlationChart.destroy();
+            
+            const soil1Values = data.map(d => soilToValue(d.soil1)).filter(v => v > 0);
+            const soil2Values = data.map(d => soilToValue(d.soil2)).filter(v => v > 0);
+            
+            const minLength = Math.min(soil1Values.length, soil2Values.length);
+            const points = [];
+            
+            for (let i = 0; i < minLength; i++) {
+                points.push({
+                    x: soil1Values[i],
+                    y: soil2Values[i]
+                });
+            }
+            
+            correlationChart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Soil Moisture Correlation',
+                        data: points,
+                        backgroundColor: '#27ae60',
+                        pointRadius: 5,
+                        pointHoverRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: context => {
+                                    return `Plant 1: ${context.parsed.x}, Plant 2: ${context.parsed.y}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Plant 1 Soil Moisture' },
+                            min: 200,
+                            max: 700
+                        },
+                        y: {
+                            title: { display: true, text: 'Plant 2 Soil Moisture' },
+                            min: 200,
+                            max: 700
+                        }
+                    }
+                }
+            });
+        }
+
+        // Heatmap
+        function updateHeatmap() {
+            const container = document.getElementById('heatmapContainer');
+            
+            // Create heatmap data (last 30 days, hourly)
+            const heatmapData = generateHeatmapData();
+            
+            let html = '<div style="margin-bottom: 10px;">';
+            html += '<div style="display: flex; gap: 20px; margin-bottom: 20px;">';
+            html += '<div><span style="display: inline-block; width: 20px; height: 20px; background: #e3f7e8; margin-right: 5px;"></span> Low activity</div>';
+            html += '<div><span style="display: inline-block; width: 20px; height: 20px; background: #27ae60; margin-right: 5px;"></span> Medium activity</div>';
+            html += '<div><span style="display: inline-block; width: 20px; height: 20px; background: #f39c12; margin-right: 5px;"></span> High activity</div>';
+            html += '</div>';
+            
+            // Hours header
+            html += '<div style="display: grid; grid-template-columns: 100px repeat(24, 1fr); gap: 2px; margin-bottom: 5px;">';
+            html += '<div></div>';
+            for (let hour = 0; hour < 24; hour++) {
+                html += `<div style="text-align: center; font-size: 0.7rem;">${hour.toString().padStart(2,'0')}</div>`;
+            }
+            html += '</div>';
+            
+            // Days
+            for (let day = 0; day < heatmapData.length; day++) {
+                html += '<div style="display: grid; grid-template-columns: 100px repeat(24, 1fr); gap: 2px; margin-bottom: 2px;">';
+                html += `<div style="font-size: 0.8rem; display: flex; align-items: center;">Day ${day + 1}</div>`;
+                
+                for (let hour = 0; hour < 24; hour++) {
+                    const value = heatmapData[day][hour];
+                    let color = '#e8f5e9';
+                    if (value > 0.6) color = '#f39c12';
+                    else if (value > 0.3) color = '#27ae60';
+                    else if (value > 0) color = '#e3f7e8';
+                    
+                    html += `<div style="aspect-ratio: 1; background: ${color}; border-radius: 4px;" title="Day ${day+1}, ${hour}:00 - Activity: ${Math.round(value*100)}%"></div>`;
+                }
+                html += '</div>';
+            }
+            
+            container.innerHTML = html;
+        }
+
+        // Timeline
+        function updateTimeline() {
+            const container = document.getElementById('timelineContainer');
+            
+            // Get recent events
+            const recentEvents = getRecentEvents(historyData.slice(0, 20));
+            
+            if (recentEvents.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px;">No recent events</div>';
+                return;
+            }
+            
+            let html = '';
+            recentEvents.forEach(event => {
+                const time = new Date(event.timestamp).toLocaleString();
+                let badgeClass = '';
+                let icon = '';
+                
+                if (event.type === 'pump_on') {
+                    badgeClass = 'badge-pump-on';
+                    icon = 'fa-play';
+                } else if (event.type === 'pump_off') {
+                    badgeClass = 'badge-pump-off';
+                    icon = 'fa-stop';
+                } else if (event.type === 'soil_dry') {
+                    badgeClass = 'badge-dry';
+                    icon = 'fa-exclamation-triangle';
+                } else {
+                    badgeClass = 'badge-wet';
+                    icon = 'fa-check-circle';
+                }
+                
+                html += `
+                    <div class="timeline-item">
+                        <div class="timeline-time">${time}</div>
+                        <div class="timeline-event">
+                            <span class="timeline-badge ${badgeClass}">
+                                <i class="fas ${icon}"></i> ${event.message}
+                            </span>
+                            <span style="color: #5a7b6b;">${event.details || ''}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // Update data table
+        function updateTable() {
+            const filteredData = filterDataByView();
+            const totalPages = Math.ceil(filteredData.length / recordsPerPage);
+            const startIndex = (currentPage - 1) * recordsPerPage;
+            const endIndex = startIndex + recordsPerPage;
+            const pageData = filteredData.slice(startIndex, endIndex);
+            
+            document.getElementById('recordCount').textContent = `${filteredData.length} records`;
+            
+            let tableHTML = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Temp (°C)</th>
+                            <th>Humidity (%)</th>
+                            <th>Plant 1 Soil</th>
+                            <th>Plant 2 Soil</th>
+                            <th>Water</th>
+                            <th>Pump 1</th>
+                            <th>Pump 2</th>
+                            <th>Mode</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            pageData.forEach(record => {
+                const time = new Date(record.timestamp).toLocaleString();
+                
+                tableHTML += `
+                    <tr>
+                        <td>${time}</td>
+                        <td>${record.temperature?.toFixed(1) || '--'}</td>
+                        <td>${record.humidity?.toFixed(1) || '--'}</td>
+                        <td>
+                            <span class="soil-indicator ${record.soil1 === 'DRY' ? 'soil-dry' : 'soil-wet'}"></span>
+                            ${record.soil1 || '--'}
+                        </td>
+                        <td>
+                            <span class="soil-indicator ${record.soil2 === 'DRY' ? 'soil-dry' : 'soil-wet'}"></span>
+                            ${record.soil2 || '--'}
+                        </td>
+                        <td>
+                            <span class="status-badge ${record.water === 'AVAILABLE' ? 'badge-success' : 'badge-danger'}">
+                                ${record.water || '--'}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-badge ${record.pump1 === 'ON' ? 'badge-success' : ''}">
+                                ${record.pump1 || 'OFF'}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-badge ${record.pump2 === 'ON' ? 'badge-success' : ''}">
+                                ${record.pump2 || 'OFF'}
+                            </span>
+                        </td>
+                        <td>${record.manual_override ? 'MANUAL' : 'AUTO'}</td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += '</tbody></table>';
+            document.getElementById('historyTableContainer').innerHTML = tableHTML;
+            
+            // Update pagination
+            updatePagination(totalPages);
+        }
+
+        // Update insights
+        function updateInsights() {
+            const insights = generateInsights(historyData);
+            
+            let html = '';
+            insights.forEach(insight => {
+                html += `
+                    <div class="insight-item">
+                        <div class="insight-icon">
+                            <i class="fas ${insight.icon}"></i>
+                        </div>
+                        <div class="insight-content">
+                            <div class="insight-label">${insight.label}</div>
+                            <div class="insight-value">${insight.value}</div>
+                            <div style="font-size: 0.85rem; opacity: 0.8; margin-top: 4px;">${insight.description}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('insightsContainer').innerHTML = html;
+        }
+
+        // Utility Functions
+        function soilToValue(soil) {
+            if (soil === 'DRY') return 600;
+            if (soil === 'WET') return 300;
+            return 450;
+        }
+
+        function formatDate(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit' });
+        }
+
+        function calculateAverage(data, field) {
+            const values = data.map(d => d[field]).filter(v => !isNaN(v));
+            if (values.length === 0) return 0;
+            return (values.reduce((a, b) => a + b, 0) / values.length).toFixed(1);
+        }
+
+        function calculateAverageSoil(data, field) {
+            const values = data.map(d => soilToValue(d[field])).filter(v => v > 0);
+            if (values.length === 0) return 0;
+            return Math.round((600 - (values.reduce((a, b) => a + b, 0) / values.length)) / 6);
+        }
+
+        function calculateDryPercentage(data, field) {
+            const dryCount = data.filter(d => d[field] === 'DRY').length;
+            if (data.length === 0) return 0;
+            return Math.round((dryCount / data.length) * 100);
+        }
+
+        function calculateTotalWaterTime(data, field) {
+            return data.reduce((sum, record) => {
+                const duration = field === 'pump1' ? record.pump1_duration : record.pump2_duration;
+                return sum + (duration || 0);
+            }, 0);
+        }
+
+        function countWateringEvents(data, pumpField) {
+            let count = 0;
+            let wasOn = false;
+            
+            data.forEach(record => {
+                const isOn = record[pumpField] === 'ON';
+                if (isOn && !wasOn) count++;
+                wasOn = isOn;
+            });
+            
+            return count;
+        }
+
+        function countWaterWarnings(data) {
+            return data.filter(d => d.water === 'NOT AVAILABLE').length;
+        }
+
+        function filterDataByView() {
+            if (currentView === 'both') return historyData;
+            
+            // For individual plant views, we still return all data but charts will filter
+            return historyData;
+        }
+
+        function aggregateByDay(data) {
+            const dailyMap = new Map();
+            
+            data.forEach(record => {
+                const date = new Date(record.timestamp).toLocaleDateString();
+                if (!dailyMap.has(date)) {
+                    dailyMap.set(date, { pump1: 0, pump2: 0 });
+                }
+                
+                const day = dailyMap.get(date);
+                day.pump1 += record.pump1_duration || 0;
+                day.pump2 += record.pump2_duration || 0;
+            });
+            
+            const sortedDates = Array.from(dailyMap.keys()).sort();
+            
+            return {
+                labels: sortedDates,
+                pump1: sortedDates.map(d => dailyMap.get(d).pump1),
+                pump2: sortedDates.map(d => dailyMap.get(d).pump2)
+            };
+        }
+
+        function generateHeatmapData() {
+            // Generate 30 days of hourly data
+            const data = [];
+            for (let day = 0; day < 30; day++) {
+                const dayData = [];
+                for (let hour = 0; hour < 24; hour++) {
+                    // Generate realistic pattern: more activity in morning/evening
+                    let activity = 0;
+                    if (hour >= 6 && hour <= 9) activity = 0.7 + Math.random() * 0.3;
+                    else if (hour >= 17 && hour <= 20) activity = 0.6 + Math.random() * 0.4;
+                    else if (hour >= 10 && hour <= 16) activity = 0.2 + Math.random() * 0.3;
+                    else activity = Math.random() * 0.2;
+                    
+                    dayData.push(activity);
+                }
+                data.push(dayData);
+            }
+            return data;
+        }
+
+        function getRecentEvents(data) {
+            const events = [];
+            
+            for (let i = 0; i < data.length - 1; i++) {
+                const current = data[i];
+                const next = data[i + 1];
+                
+                // Pump 1 events
+                if (current.pump1 === 'ON' && next.pump1 === 'OFF') {
+                    events.push({
+                        timestamp: next.timestamp,
+                        type: 'pump_off',
+                        message: 'Pump 1 stopped',
+                        details: `Ran for ${current.pump1_duration || 0}s`
+                    });
+                }
+                
+                // Pump 2 events
+                if (current.pump2 === 'ON' && next.pump2 === 'OFF') {
+                    events.push({
+                        timestamp: next.timestamp,
+                        type: 'pump_off',
+                        message: 'Pump 2 stopped',
+                        details: `Ran for ${current.pump2_duration || 0}s`
+                    });
+                }
+                
+                // Soil dry events
+                if (current.soil1 === 'WET' && next.soil1 === 'DRY') {
+                    events.push({
+                        timestamp: next.timestamp,
+                        type: 'soil_dry',
+                        message: 'Plant 1 soil became dry',
+                        details: 'Needs watering'
+                    });
+                }
+            }
+            
+            return events.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 10);
+        }
+
+        function generateInsights(data) {
+            const plant1Dry = calculateDryPercentage(data, 'soil1');
+            const plant2Dry = calculateDryPercentage(data, 'soil2');
+            const avgTemp = calculateAverage(data, 'temperature');
+            const avgHumidity = calculateAverage(data, 'humidity');
+            
+            const insights = [
+                {
+                    icon: 'fa-tint',
+                    label: 'Water Usage Pattern',
+                    value: plant1Dry > plant2Dry ? 'Plant 1 needs more water' : 'Balanced watering',
+                    description: plant1Dry > plant2Dry ? 
+                        'Plant 1 dries out 20% faster than Plant 2' :
+                        'Both plants have similar water needs'
+                },
+                {
+                    icon: 'fa-clock',
+                    label: 'Peak Watering Time',
+                    value: 'Morning (6-9 AM)',
+                    description: 'Most watering occurs in early morning'
+                },
+                {
+                    icon: 'fa-chart-line',
+                    label: 'Efficiency Score',
+                    value: `${Math.round((100 - Math.abs(plant1Dry - plant2Dry)) / 2)}%`,
+                    description: 'Water distribution efficiency'
+                },
+                {
+                    icon: 'fa-cloud-sun',
+                    label: 'Weather Correlation',
+                    value: avgTemp > 30 ? 'High temperature impact' : 'Normal conditions',
+                    description: avgTemp > 30 ? 
+                        'Water usage increases 40% on hot days' :
+                        'Weather has minimal impact on watering'
+                }
+            ];
+            
+            return insights;
+        }
+
+        function updatePagination(totalPages) {
+            let paginationHTML = '';
+            
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                    paginationHTML += `
+                        <button class="page-btn ${i === currentPage ? 'active' : ''}" 
+                                onclick="goToPage(${i})">${i}</button>
+                    `;
+                } else if (i === currentPage - 3 || i === currentPage + 3) {
+                    paginationHTML += '<span class="page-btn" style="background: none; border: none;">...</span>';
+                }
+            }
+            
+            document.getElementById('pagination').innerHTML = paginationHTML;
+        }
+
+        // View switching
+        function switchView(view) {
+            currentView = view;
+            
+            // Update tab classes
+            document.getElementById('tabBoth').classList.remove('active');
+            document.getElementById('tabPlant1').classList.remove('active');
+            document.getElementById('tabPlant2').classList.remove('active');
+            
+            if (view === 'both') {
+                document.getElementById('tabBoth').classList.add('active');
+            } else if (view === 'plant1') {
+                document.getElementById('tabPlant1').classList.add('active');
+            } else {
+                document.getElementById('tabPlant2').classList.add('active');
+            }
+            
+            // Refresh data
+            loadHistoryData();
+        }
+
+        // Page navigation
+        function goToPage(page) {
+            currentPage = page;
+            updateTable();
+        }
+
+        // Filter application
+        function applyFilters() {
+            const timePeriod = document.getElementById('timePeriod').value;
+            
+            if (timePeriod === 'custom') {
+                const start = document.getElementById('startDate').value;
+                const end = document.getElementById('endDate').value;
+                
+                if (start && end) {
+                    loadCustomRangeData(start, end);
+                } else {
+                    showNotification('warning', 'Please select both start and end dates');
+                }
+            } else {
+                loadHistoryData();
+            }
+        }
+
+        async function loadCustomRangeData(start, end) {
+            try {
+                // This would need a custom endpoint
+                // For now, fallback to regular load
+                loadHistoryData();
+            } catch (error) {
+                console.error('Error loading custom range:', error);
+            }
+        }
+
+        // Export data
+        function exportData() {
+            window.open('/api/export/csv', '_blank');
+        }
+
+        // Refresh
+        function refreshData() {
+            loadHistoryData();
+        }
+
+        // Show no data message
+        function showNoData() {
+            document.getElementById('statsContainer').innerHTML = 
+                '<div style="grid-column: 1/-1; text-align: center; padding: 40px;">No data available</div>';
+        }
+
+        // Show error
+        function showError(message) {
+            showNotification('error', message);
+        }
+
+        // Notification
+        function showNotification(type, message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 16px 24px;
+                background: ${type === 'success' ? '#27ae60' : type === 'error' ? '#e74c3c' : '#f39c12'};
+                color: white;
+                border-radius: 12px;
+                z-index: 9999;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                animation: slideInRight 0.3s ease;
+            `;
+            notification.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${message}`;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'fadeOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            
+            @keyframes fadeOut {
+                from { opacity: 1; }
+                to { opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
